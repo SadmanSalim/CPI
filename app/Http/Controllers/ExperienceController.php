@@ -63,5 +63,43 @@ class ExperienceController extends Controller
         ]);
     }
 
+    public function update(Request $request, $id)
+    {
+
+        $request->validate([
+            'title' => 'required',
+            'department' => 'required',
+            'your_experience' => 'required',
+        ]);
+        $experience = Experience::findOrFail($id);
+
+        // If title changed, regenerate slug
+        if ($request->filled('title') && $experience->title !== $request->title) {
+            $experience->slug = $this->generateUniqueSlug($request->title);
+            $experience->title = $request->title;
+        }
+        $experience->title = $request->title ?? $experience->title;
+        $experience->department = $request->department ?? $experience->department;
+        $experience->featured_image_url = $request->featured_image_url ?? $experience->featured_image_url;
+        $experience->your_experience = $request->your_experience ?? $experience->your_experience;
+        $experience->is_published = $request->is_published ?? 0;
+        $experience->save();
+
+        return response()->json([
+            'message' => 'Experience Updated Successfully',
+            'experience' => $experience
+        ]);
+    }
+
+    public function delete($id)
+    {
+        $experience = Experience::findOrFail($id);
+        $experience->delete();
+
+        return response()->json([
+            'message' => 'Experience Deleted Successfully',
+        ]);
+    }
+
 
 }
